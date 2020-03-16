@@ -1,10 +1,11 @@
 /* eslint-env node */
 
-const Config = require("./lib/Config.js"),
+const path = require("path"),
+	Config = require("./lib/Config.js"),
   HTTPSClient = require("./lib/HTTPSClient.js"),
   HTMLParser = require("./lib/HTMLParser.js"),
   Mailer = require("./lib/Mailer.js"),
-  appConfig = Config.from("./config.json");
+  appConfig = Config.from(path.join(__dirname, "config.json"));
 
 function getHTML() {
   return HTTPSClient.get(appConfig.url);
