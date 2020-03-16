@@ -1,0 +1,13 @@
+{
+    "url": "https://www.uni-regensburg.de/interne-kommunikation/corona-infos/index.html",
+    "lastUpdate": null,
+    "mailHost": "",
+    "mailPort": 1337,
+    "mailSecure": true,
+    "mailUser": "",
+    "mailPass": "",
+    "mailSubject": "[Corona-Updates] $DATE",
+    "mailSender": "Corona Update Notifier",
+    "mailRecipients": "",
+    "mailText": "<h1>Aktuelle Neuigkeiten der Uni Regensburg zum Umgang mit dem Coronavirus</h1>$NEWS<div>Diese E-Mail wurde automatisch generiert. Die Angaben sind ohne Gewähr. Quelle: <a href=\"https://www.uni-regensburg.de/interne-kommunikation/corona-infos/\">https://www.uni-regensburg.de/interne-kommunikation/corona-infos/</a></div>"
+}

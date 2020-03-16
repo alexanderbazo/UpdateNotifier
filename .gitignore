@@ -1,0 +1,5 @@
+# Ignore local config
+config.json
+
+# Node
+node_modules
