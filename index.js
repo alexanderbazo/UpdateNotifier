@@ -1,9 +1,9 @@
 /* eslint-env node */
 
 const path = require("path"),
-	Config = require("./lib/Config.js"),
+  Config = require("./lib/Config.js"),
   HTTPSClient = require("./lib/HTTPSClient.js"),
-  HTMLParser = require("./lib/HTMLParser.js"),
+  InfoPage = require("./lib/InfoPage.js"),
   Mailer = require("./lib/Mailer.js"),
   appConfig = Config.from(path.join(__dirname, "config.json"));
 
@@ -11,22 +11,35 @@ function getHTML() {
   return HTTPSClient.get(appConfig.url);
 }
 
-function createDOMParser(html) {
+function createInfoPage(html) {
   return new Promise(function(resolve, reject) {
-    resolve(new HTMLParser(html));
+    resolve(InfoPage.fromHTML(html));
   });
 }
 
-function update(dom) {
-  let updateDate = dom.getUpdateDate(),
-    lastUpdate = new Date(appConfig.lastUpdate);
-  if (appConfig.lastUpdate === null || lastUpdate.getTime() !== updateDate.getTime()) {
-    console.log("Sending E-Mail with status update");
-    let news = dom.getNews(),
-      newsText = "";
-    news.forEach((news) => {
-      newsText += "<h2>" + news.title + "</h2>\n" + news.content;
-    });
+function checkForUpdates(page) {
+  return new Promise(function(resolve, reject) {
+    let updateDate = page.getUpdateDate(),
+      lastUpdate = new Date(appConfig.lastUpdate);
+    if (appConfig.lastUpdate === null || lastUpdate.getTime() !==
+      updateDate.getTime()) {
+      let news = page.getNews(),
+        newsText = "";
+      news.forEach((news) => {
+        newsText += "<h2>" + news.title + "</h2>\n" + news.content;
+      });
+      resolve({
+        date: updateDate,
+        text: newsText,
+      });
+    } else {
+      reject("No updates detected");
+    }
+  });
+}
+
+function sendMail(update) {
+  return new Promise(function(resolve, reject) {
     Mailer.send({
       host: appConfig.mailHost,
       port: appConfig.mailPort,
@@ -35,21 +48,32 @@ function update(dom) {
       password: appConfig.mailPass,
       from: appConfig.mailSender,
       to: appConfig.mailRecipients,
-      subject: appConfig.mailSubject.replace("$DATE", updateDate),
-      text: appConfig.mailText.replace("$NEWS", newsText),
+      subject: appConfig.mailSubject.replace("$DATE", update.date),
+      text: appConfig.mailText.replace("$DATE", update.date).replace("$NEWS",
+        update.text),
     }).then(() => {
-      appConfig.lastUpdate = updateDate;
-      appConfig.save();
+      resolve(update.date);
     }).catch((error) => {
-      console.log(error);
+      reject(error);
     });
-  } else {
-    console.log("No updates detected.");
-  }
+  });
+}
+
+function updateConfig(date) {
+  appConfig.lastUpdate = date;
+  appConfig.save();
+  log("Email send and config.json udpated");
+}
+
+function log(msg) {
+  /* eslint-disable no-console */
+  console.log(msg);
+  /* eslint-enable no-console */
 }
 
 function run() {
-  getHTML().then(createDOMParser).then(update);
+  getHTML().then(createInfoPage).then(checkForUpdates).then(sendMail).then(
+    updateConfig).catch(log);
 }
 
 run();
