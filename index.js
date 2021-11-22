@@ -62,7 +62,7 @@ function sendMail(update) {
 function updateConfig(date) {
   appConfig.lastUpdate = date;
   appConfig.save();
-  log("Email send and config.json udpated");
+  log("Email send and config.json updated");
 }
 
 function log(msg) {
@@ -72,8 +72,7 @@ function log(msg) {
 }
 
 function run() {
-  getHTML().then(createInfoPage).then(checkForUpdates).then(sendMail).then(
-    updateConfig).catch(log);
+  getHTML().then(createInfoPage).then(checkForUpdates).then(sendMail).then(updateConfig).catch(log);
 }
 
 run();
